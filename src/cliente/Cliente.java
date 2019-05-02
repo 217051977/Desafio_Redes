@@ -1,60 +1,75 @@
 package cliente;
 
-import pessoa.Pessoa;
+import Comum.Mensagem;
 
 import java.io.*;
 import java.net.*;
 
 public class Cliente {
 
-//  create a socket
-    private Socket clientSocket;
 //  create a printWriter?????
     private ObjectOutputStream out;
 //  create a buffer reader
-    private BufferedReader in;
+private ObjectInputStream in;
+
+    private String remetente;
+    private String enderecoServidor;
+    private int porta;
+    private boolean execucao;
 
 //  create a constructor
-    public Cliente() throws IOException {
+    public Cliente(String remetente, String enderecoServidor, int porta) {
 
-//      initialize the socket
-//      initialize the printWriter
-//      initialize the bufferReader
-        clientSocket = new Socket("localhost", 3000);
-        out = new ObjectOutputStream(clientSocket.getOutputStream());
-        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        this.remetente = remetente;
+        this.enderecoServidor = enderecoServidor;
+        this.porta = porta;
 
     }
 
-//  create a function that will send the message to the server
-    public void sendMessage(Pessoa pessoa) throws IOException {
+    public void start() throws IOException {
 
-        String incomingMessage;
+        execucao = true;
 
-        out.writeObject(pessoa);
+        Socket socket = new Socket(InetAddress.getByName(enderecoServidor), porta);
 
-        try {
+        out = new ObjectOutputStream(socket.getOutputStream());
+        in = new ObjectInputStream(socket.getInputStream());
 
-            incomingMessage = in.readLine();
-            System.out.println(incomingMessage);
-
-        }catch (Exception e) {
-
-            e.printStackTrace();
-
-        }
+        receberMensagens();
 
     }
 
-//  create a function that stops the connection
-    public void stopConnection() throws IOException {
+    public void terminar() {
 
-//      closes the printWriter
-//      closes the bufferReader
-//      closes the socket
-        in.close();
-        out.close();
-        clientSocket.close();
+    }
+
+    public void enviarMensagem(String conteudo) throws IOException {
+
+        Mensagem mensagemParaEnviar = new Mensagem(remetente, conteudo);
+        out.writeObject(mensagemParaEnviar);
+
+    }
+
+    private void receberMensagens() {
+
+        new Thread(() -> {
+
+            try {
+
+                while (execucao) {
+
+                    Mensagem mensagemRecebida = (Mensagem) in.readObject();
+                    System.out.println(mensagemRecebida);
+
+                }
+
+            } catch (IOException | ClassNotFoundException e) {
+
+                e.printStackTrace();
+
+            }
+
+        }).start();
 
     }
 

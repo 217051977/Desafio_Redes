@@ -3,7 +3,7 @@ package cliente;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class Main {
+public class Main2 {
 
     private static final String INSTRUCAO_DE_TERMINAR = "TERMINAR";
 
